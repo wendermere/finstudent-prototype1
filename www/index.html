@@ -1,0 +1,1215 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>FinStudent — Smart Allowance & Financial Analytics</title>
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#5b46e8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        bank: {
+                            bg: '#f3f4f8',
+                            card: '#fafafc',
+                            border: '#e4e6ef',
+                            darkBg: '#131522',
+                            darkCard: '#1b1e2e',
+                            darkElevated: '#24283d',
+                            darkBorder: '#2d324a'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body class="bg-[#191b2b] text-slate-800 min-h-screen flex justify-center transition-colors">
+
+    <!-- =========================================================
+         SCREEN 0: AUTHENTICATION (LOGIN / REGISTER)
+         ========================================================= -->
+    <div id="authScreen" class="w-full max-w-md bg-bank-bg dark:bg-bank-darkBg text-slate-800 dark:text-slate-100 min-h-screen shadow-2xl flex flex-col justify-between p-6">
+        <div class="pt-6">
+            <div class="inline-flex items-center gap-2 bg-indigo-100/80 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 text-xs font-bold px-3 py-1.5 rounded-full border border-indigo-200/80 dark:border-indigo-800/60">
+                <span>STI College Ortigas-Cainta • Mobile Prototype</span>
+            </div>
+
+            <h1 class="text-3xl font-extrabold text-slate-900 dark:text-slate-100 mt-4 tracking-tight">
+                Fin<span class="text-indigo-600 dark:text-indigo-400">Student</span>
+            </h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Smart Allowance Allocation and Financial Analytics Platform for Tertiary Students
+            </p>
+
+            <!-- Login / Register Toggle -->
+            <div class="grid grid-cols-2 bg-slate-200/80 dark:bg-bank-darkCard p-1 rounded-xl mt-6 text-xs font-bold border border-bank-border dark:border-bank-darkBorder">
+                <button id="tabLoginBtn" onclick="setAuthMode('login')" class="py-2 rounded-lg bg-bank-card dark:bg-bank-darkElevated text-indigo-700 dark:text-indigo-300 shadow-sm transition">
+                    Student Login
+                </button>
+                <button id="tabRegisterBtn" onclick="setAuthMode('register')" class="py-2 rounded-lg text-slate-500 dark:text-slate-400 transition">
+                    Create Account
+                </button>
+            </div>
+
+            <!-- Auth Form -->
+            <form id="authForm" onsubmit="handleAuthSubmit(event)" class="mt-5 space-y-3.5 bg-bank-card dark:bg-bank-darkCard p-5 rounded-2xl border border-bank-border dark:border-bank-darkBorder shadow-sm">
+                <div id="registerNameGroup" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Full Name</label>
+                    <input id="regName" type="text" placeholder="e.g., Juan Dela Cruz" class="w-full border border-bank-border dark:border-bank-darkBorder bg-bank-bg dark:bg-bank-darkElevated rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-indigo-500" />
+                </div>
+
+                <div id="registerCourseGroup" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Program / Year Level</label>
+                    <input id="regCourse" type="text" placeholder="e.g., BSCS - 3rd Year" class="w-full border border-bank-border dark:border-bank-darkBorder bg-bank-bg dark:bg-bank-darkElevated rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-indigo-500" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Student Email</label>
+                    <input id="authEmail" type="email" required value="student@ortigas-cainta.sti.edu.ph" class="w-full border border-bank-border dark:border-bank-darkBorder bg-bank-bg dark:bg-bank-darkElevated rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-indigo-500" />
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300">Password</label>
+                        <button type="button" onclick="togglePasswordVisibility()" class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1 focus:outline-none">
+                            <span id="toggleText">Show</span>
+                        </button>
+                    </div>
+                    <input id="authPassword" type="password" required value="finstudent2026" class="w-full border border-bank-border dark:border-bank-darkBorder bg-bank-bg dark:bg-bank-darkElevated rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-indigo-500" />
+                </div>
+
+                <p id="authError" class="hidden text-xs text-rose-600 dark:text-rose-400 font-medium"></p>
+
+                <button id="authSubmitBtn" type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl text-sm shadow-sm transition">
+                    Sign In to Dashboard
+                </button>
+            </form>
+
+            <!-- Quick Demo Shortcut for Defense -->
+            <div class="mt-4 pt-4 border-t border-bank-border dark:border-bank-darkBorder">
+                <button onclick="loginAsDemo()" class="w-full bg-slate-800 hover:bg-slate-700 dark:bg-bank-darkElevated dark:hover:bg-indigo-950 text-slate-100 font-semibold py-2.5 rounded-xl text-xs border border-transparent dark:border-bank-darkBorder transition">
+                    One-Click Demo Student Login (Defense Mode)
+                </button>
+            </div>
+        </div>
+
+        <p class="text-[11px] text-center text-slate-400 pb-2">
+            Mobile-Exclusive UI &amp; Logic Prototype • PHP 8.x &amp; MySQL Integration in Phase 4
+        </p>
+    </div>
+
+    <!-- =========================================================
+         MAIN APP FRAME (LOGGED-IN MOBILE VIEW)
+         ========================================================= -->
+    <div id="appScreen" class="hidden w-full max-w-md bg-bank-bg dark:bg-bank-darkBg text-slate-800 dark:text-slate-100 min-h-screen shadow-2xl flex flex-col relative pb-24 transition-colors">
+
+        <!-- Neobank Top Header & Virtual Card -->
+        <header class="bg-gradient-to-br from-[#3b2d86] via-[#5338b8] to-[#7c3aed] text-white px-5 pt-5 pb-6 rounded-b-[2rem] shadow-md">
+            <div class="flex items-center justify-between gap-2.5">
+                <!-- Clickable Profile Avatar + Username -> Opens Settings -->
+                <button type="button" onclick="openSettingsModal()" aria-label="Open Settings"
+                        class="flex items-center gap-2.5 bg-white/12 hover:bg-white/20 active:scale-[0.99] pr-3.5 pl-1.5 py-1.5 rounded-full border border-white/15 transition text-left min-w-0">
+                    <span id="headerAvatar" class="w-8 h-8 rounded-full bg-[#fafafc] text-indigo-800 font-extrabold text-xs flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                        WA
+                    </span>
+                    <span class="truncate">
+                        <span id="headerUsername" class="block text-xs font-bold leading-tight truncate text-slate-50">Wendermere</span>
+                        <span id="headerSubtext" class="block text-[10px] text-indigo-200 leading-tight truncate">Settings • BSCS 3rd Yr</span>
+                    </span>
+                </button>
+
+                <!-- Primary Main Action: Set Allowance -->
+                <button type="button" onclick="openAllowanceModal()"
+                        class="bg-[#fafafc] text-indigo-900 hover:bg-indigo-50 active:scale-95 text-xs font-extrabold px-4 py-2.5 rounded-2xl shadow-sm transition shrink-0">
+                    + Set Allowance
+                </button>
+            </div>
+
+            <!-- Glassmorphic Banking Balance Card -->
+            <div class="mt-4 bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 shadow-inner">
+                <div class="flex justify-between items-center">
+                    <span class="text-[11px] uppercase tracking-wider font-semibold text-indigo-100">Remaining Spend Limit</span>
+                    <span id="cycleBadge" class="text-[11px] font-semibold bg-black/20 text-indigo-100 px-2.5 py-0.5 rounded-full">Weekly • 4 days left</span>
+                </div>
+                <div id="remainingTotal" class="text-3xl font-extrabold tabular-nums mt-1.5 tracking-tight text-white">₱0.00</div>
+                <p id="savingsNotice" class="text-[11px] text-indigo-200 mt-1">*20% Savings Rule • Pool available: ₱0.00</p>
+                <div class="flex justify-between text-xs text-indigo-100 mt-3 pt-2.5 border-t border-white/15 tabular-nums">
+                    <span>Allowance: <strong id="totalAllocatedText" class="text-white">₱0.00</strong></span>
+                    <span>Safe Daily: <strong id="safeDailySpend" class="text-emerald-200">₱0.00/day</strong></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Alert Banner Container -->
+        <div id="alertContainer" class="px-4 mt-3 space-y-2"></div>
+
+        <!-- Main View Switcher -->
+        <main class="px-4 pt-3.5 flex-1 space-y-4">
+
+            <!-- TAB 1: DASHBOARD -->
+            <section id="view-dashboard" class="space-y-4">
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-xs font-extrabold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Category Limits</h2>
+                    <div class="flex items-center gap-2">
+                        <button type="button" id="dashboardUndoBtn" onclick="undoLastAction()" disabled
+                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-100/80 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/70 dark:border-indigo-800/60 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-200/70 transition">
+                            <span>↶ Undo</span>
+                        </button>
+                        <button type="button" onclick="resetToZero()" class="text-[11px] font-semibold text-rose-600/90 dark:text-rose-400 hover:underline">
+                            Reset ₱0
+                        </button>
+                        <button type="button" onclick="resetDemoData()" class="text-[11px] font-semibold text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:underline">
+                            Sample
+                        </button>
+                    </div>
+                </div>
+                <div id="categoryCards" class="space-y-2.5"></div>
+
+                <div class="pt-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-xs font-extrabold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Recent Transactions</h2>
+                        <span id="txCount" class="text-xs text-slate-400 tabular-nums">0 items</span>
+                    </div>
+                    <div id="recentExpenses" class="bg-bank-card dark:bg-bank-darkCard rounded-2xl border border-bank-border dark:border-bank-darkBorder divide-y divide-bank-border dark:divide-bank-darkBorder shadow-sm"></div>
+                </div>
+            </section>
+
+            <!-- TAB 2: ANALYTICS (CHART.JS) -->
+            <section id="view-analytics" class="hidden space-y-4">
+                <div class="bg-bank-card dark:bg-bank-darkCard p-4 rounded-2xl border border-bank-border dark:border-bank-darkBorder shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 mb-1">Daily Spending Trend</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Updates live as you log today's expenses</p>
+                    <canvas id="dailyChart" height="180"></canvas>
+                </div>
+
+                <div class="bg-bank-card dark:bg-bank-darkCard p-4 rounded-2xl border border-bank-border dark:border-bank-darkBorder shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 mb-1">Planned vs. Actual by Category</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Compare rule-based allocation against actual spend</p>
+                    <canvas id="budgetChart" height="190"></canvas>
+                </div>
+            </section>
+
+            <!-- TAB 3: SAVINGS GOALS -->
+            <section id="view-savings" class="hidden space-y-3">
+                <div class="bg-gradient-to-br from-[#3b2d86] via-[#5338b8] to-[#7c3aed] text-white p-4 rounded-2xl shadow-sm">
+                    <div class="flex items-center justify-between gap-2">
+                        <div>
+                            <p class="text-[11px] uppercase tracking-wider text-indigo-200 font-semibold">Available Savings Budget</p>
+                            <p id="savingsPoolDisplay" class="text-2xl font-extrabold tabular-nums mt-0.5">₱0.00</p>
+                        </div>
+                        <button type="button" onclick="openGoalAllocateModal()"
+                                class="bg-[#fafafc] text-indigo-900 hover:bg-indigo-50 text-xs font-extrabold px-3.5 py-2 rounded-xl shadow transition shrink-0">
+                            Allocate to Goal
+                        </button>
+                    </div>
+                    <p id="savingsPoolHint" class="text-[11px] text-indigo-100 mt-2">
+                        Set your savings % inside <strong>Set Allowance</strong> to build this budget pool, then choose any goal and custom amount.
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-xs font-extrabold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Savings Goals</h2>
+                    <div class="flex items-center gap-2.5">
+                        <button type="button" id="savingsUndoBtn" onclick="undoLastAction()" disabled
+                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-100/80 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/70 dark:border-indigo-800/60 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-200/70 transition">
+                            <span>↶ Undo</span>
+                        </button>
+                        <span id="goalsSummaryBadge" class="text-xs text-slate-500 dark:text-slate-400 tabular-nums">Total: ₱0.00</span>
+                    </div>
+                </div>
+                <div id="savingsCards" class="space-y-3"></div>
+            </section>
+
+        </main>
+
+        <!-- Floating Undo Toast Notification -->
+        <div id="undoToast" class="hidden fixed bottom-20 left-4 right-4 max-w-[26rem] mx-auto z-40 bg-slate-800/95 dark:bg-bank-darkElevated/95 backdrop-blur-md text-slate-100 px-4 py-2.5 rounded-2xl shadow-lg border border-white/10 flex items-center justify-between gap-3 text-xs">
+            <span id="undoToastMessage" class="truncate font-medium">Action saved</span>
+            <button type="button" onclick="undoLastAction()" class="px-2.5 py-1 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white font-bold shrink-0 transition">
+                Undo
+            </button>
+        </div>
+
+        <!-- Floating Quick-Add Expense Button -->
+        <button onclick="openExpenseModal()" aria-label="Add Expense"
+                class="fixed bottom-20 right-5 sm:right-[calc(50%-11.5rem)] bg-gradient-to-br from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center text-2xl font-bold transition active:scale-95 z-30">
+            +
+        </button>
+
+        <!-- Bottom Navigation -->
+        <nav class="fixed bottom-0 w-full max-w-md bg-bank-card/95 dark:bg-bank-darkCard/95 backdrop-blur-md border-t border-bank-border dark:border-bank-darkBorder grid grid-cols-3 py-2.5 text-xs font-bold z-30">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center text-indigo-600 dark:text-indigo-400">
+                <span>Dashboard</span>
+            </button>
+            <button onclick="switchTab('analytics')" id="nav-analytics" class="flex flex-col items-center text-slate-400">
+                <span>Analytics</span>
+            </button>
+            <button onclick="switchTab('savings')" id="nav-savings" class="flex flex-col items-center text-slate-400">
+                <span>Savings</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- MODAL 1: SET ALLOWANCE & SMART ALLOCATION -->
+    <div id="allowanceModal" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-4">
+        <div class="bg-bank-card dark:bg-bank-darkCard text-slate-800 dark:text-slate-100 w-full max-w-md rounded-2xl border border-bank-border dark:border-bank-darkBorder p-5 space-y-4 shadow-xl max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base">Smart Allowance Allocation</h3>
+                <button onclick="closeModal('allowanceModal')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Allowance Amount (₱)</label>
+                <input id="allowanceInput" type="number" step="10" value="1000" oninput="updateSavingsPreview()" class="w-full border border-bank-border dark:border-bank-darkBorder bg-bank-bg dark:bg-bank-darkElevated rounded-xl px-3 py-2 text-sm tabular-nums focus:outline-none focus:border-indigo-500" />
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label for="savingsPercentInput" class="block text-xs font-semibold text-slate-600 dark:text-slate-300">Savings Budget Allocation (%)</label>
+                    <span id="savingsPreviewText" class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 tabular-nums">₱200.00 to savings pool</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input id="savingsPercentInput" type="number" min="5" max="80" step="5" value="20" oninput="updateSavingsPreview()" class="w-24 border border-bank-border dark:border-bank-darkBorder bg-bank-bg dark:bg-bank-darkElevated rounded-xl px-3 py-2 text-sm tabular-nums focus:outline-none focus:border-indigo-500 disabled:opacity-50" />
+                    <div id="savingsPresetButtons" class="flex gap-1.5 flex-1 justify-end flex-wrap">
+                        <button type="button" data-preset="10" onclick="setSavingsPreset(10)" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-bank-bg dark:bg-bank-darkElevated hover:bg-indigo-100 dark:hover:bg-indigo-950 text-slate-700 dark:text-slate-200 border border-bank-border dark:border-bank-darkBorder">10%</button>
+                        <button type="button" data-preset="20" onclick="setSavingsPreset(20)" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-bank-bg dark:bg-bank-darkElevated hover:bg-indigo-100 dark:hover:bg-indigo-950 text-slate-700 dark:text-slate-200 border border-bank-border dark:border-bank-darkBorder">20%</button>
+                        <button type="button" data-preset="30" onclick="setSavingsPreset(30)" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-bank-bg dark:bg-bank-darkElevated hover:bg-indigo-100 dark:hover:bg-indigo-950 text-slate-700 dark:text-slate-200 border border-bank-border dark:border-bank-darkBorder">30%</button>
+                        <button type="button" data-preset="50" onclick="setSavingsPreset(50)" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-bank-bg dark:bg-bank-darkElevated hover:bg-indigo-100 dark:hover:bg-indigo-950 text-slate-700 dark:text-slate-200 border border-bank-border dark:border-bank-darkBorder">50%</button>
+                    </div>
+                </div>
+                <p id="savingsFloorHint" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
+                    <strong>5% minimum floor</strong> keeps a habit going on every normal cycle; type up to <strong>80%</strong> or tap <strong>50%</strong> for higher savings.
+                </p>
+
+                <!-- Tight Budget Week Option -->
+                <div class="mt-2.5 bg-bank-bg dark:bg-bank-darkElevated/80 border border-bank-border dark:border-bank-darkBorder rounded-xl p-3 flex items-start justify-between gap-3">
+                    <div class="space-y-0.5">
+                        <label for="tightWeekToggle" class="block text-xs font-bold text-slate-800 dark:text-slate-100 cursor-pointer">
+                            Tight Budget Week (0% Auto-Save)
+                        </label>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                            Turn on only if fare or basic needs leave no extra room this cycle—keeps 100% of your allowance for daily spend instead of silently straining your budget.
+                        </p>
+                    </div>
+                    <input id="tightWeekToggle" type="checkbox" onchange="handleTightWeekToggle()" class="mt-0.5 w-4 h-4 accent-indigo-600 rounded cursor-pointer shrink-0" />
+                </div>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-baseline mb-1">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300">Allowance Period &amp; Days Until Next Allowance</label>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <span class="block text-[10px] text-slate-400 mb-0.5">How often you receive it</span>
+                        <select id="cycleInput" onchange="handleCycleChange()" class="w-full border border-bank-border dark:border-bank-darkBorder bg-bank-bg dark:bg-bank-darkElevated rounded-xl px-3 py-2 text-sm">
+                            <option value="Weekly" selected>Weekly</option>
+                            <option value="Daily">Daily</option>
+                            <option value="Monthly">Monthly</option>
+                        </select>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] text-slate-400 mb-0.5">Days left in this period</span>
+                        <input id="daysLeftInput" type="number" min="1" max="31" value="4" class="w-full border border-bank-border dark:border-bank-darkBorder bg-bank-bg dark:bg-bank-darkElevated rounded-xl px-3 py-2 text-sm tabular-nums" />
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
+                    Used to compute <strong>Safe Daily Spend</strong> (Remaining Spend Limit ÷ Days Left) so your allowance lasts until the next one.
+                </p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Category Split Preset</label>
+                <select id="rulePreset" class="w-full border border-bank-border dark:border-bank-darkBorder bg-bank-bg dark:bg-bank-darkElevated rounded-xl px-3 py-2 text-sm">
+                    <option value="studentBalanced" selected>Balanced Student Split (50% Food / 25% Fare / 15% School / 10% Leisure)</option>
+                    <option value="commuteHeavy">Commute &amp; Food Focus (40% Food / 35% Fare / 15% School / 10% Leisure)</option>
+                </select>
+            </div>
+
+            <button onclick="saveAllowance()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-sm shadow-sm transition">
+                Apply Smart Allocation
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 2: LOG DAILY EXPENSE -->
+    <div id="expenseModal" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-4">
+        <div class="bg-bank-card dark:bg-bank-darkCard text-slate-800 dark:text-slate-100 w-full max-w-md rounded-2xl border border-bank-border dark:border-bank-darkBorder p-5 space-y-4 shadow-xl">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base">Log Daily Expense</h3>
+                <button onclick="closeModal('expenseModal')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+
+            <!-- Guardrail Notice When No Allowance Is Set -->
+            <div id="noAllowanceBanner" class="hidden bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/80 text-amber-900 dark:text-amber-200 rounded-xl p-3 space-y-2 text-xs">
+                <p class="font-semibold">Set an allowance first before logging expenses.</p>
+                <p class="text-amber-800/90 dark:text-amber-300/90">Your allowance sets your spend limit and category budgets so expenses are tracked accurately.</p>
+                <button type="button" onclick="closeModal('expenseModal'); openAllowanceModal();"
+                        class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg text-xs transition">
+                    + Set Allowance Now
+                </button>
+            </div>
+
+            <div id="expenseFieldsWrapper" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Amount Spent (₱)</label>
+                    <input id="expenseAmount" type="number" step="1" placeholder="e.g., 85" class="w-full border border-bank-border dark:border-bank-darkBorder bg-bank-bg dark:bg-bank-darkElevated rounded-xl px-3 py-2 text-sm tabular-nums focus:outline-none focus:border-indigo-500" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Category</label>
+                    <select id="expenseCategory" class="w-full border border-bank-border dark:border-bank-darkBorder bg-bank-bg dark:bg-bank-darkElevated rounded-xl px-3 py-2 text-sm">
+                        <option value="Food & Drinks">Food &amp; Drinks</option>
+                        <option value="Transportation">Transportation</option>
+                        <option value="School & Printing">School &amp; Printing</option>
+                        <option value="Personal & Leisure">Personal &amp; Leisure</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Note (Optional)</label>
+                    <input id="expenseNote" type="text" placeholder="e.g., Lunch or jeepney fare" class="w-full border border-bank-border dark:border-bank-darkBorder bg-bank-bg dark:bg-bank-darkElevated rounded-xl px-3 py-2 text-sm" />
+                </div>
+
+                <p id="expenseError" class="hidden text-xs text-rose-600 dark:text-rose-400 font-medium"></p>
+
+                <button id="saveExpenseBtn" onclick="addExpense()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-sm shadow-sm transition">
+                    Save Expense
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: PROFILE & SETTINGS -->
+    <div id="settingsModal" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-4">
+        <div class="bg-bank-card dark:bg-bank-darkCard text-slate-800 dark:text-slate-100 w-full max-w-md rounded-2xl border border-bank-border dark:border-bank-darkBorder p-5 space-y-4 shadow-xl">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base">Account &amp; Settings</h3>
+                <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+
+            <div class="flex items-center gap-3 bg-bank-bg dark:bg-bank-darkElevated p-3.5 rounded-2xl border border-bank-border dark:border-bank-darkBorder">
+                <div id="settingsAvatar" class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 overflow-hidden">
+                    WA
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p id="settingsName" class="font-bold text-sm truncate">Wendermere Aguirre</p>
+                    <p id="settingsCourse" class="text-xs text-slate-500 dark:text-slate-400 truncate">BSCS • STI Ortigas-Cainta</p>
+                    <label class="inline-block mt-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer">
+                        Change Profile Photo
+                        <input id="avatarUploadInput" type="file" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)" />
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between bg-bank-bg dark:bg-bank-darkElevated px-3.5 py-3 rounded-xl border border-bank-border dark:border-bank-darkBorder">
+                <div>
+                    <p class="text-xs font-bold">Midnight Slate Theme</p>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">Low-glare dark mode vs. soft daylight mist</p>
+                </div>
+                <button id="darkModeToggleBtn" type="button" onclick="toggleDarkMode()"
+                        class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition">
+                    Off
+                </button>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+                <button type="button" id="settingsUndoBtn" onclick="undoLastAction(); closeModal('settingsModal');" disabled
+                        class="py-2.5 px-2 rounded-xl text-xs font-semibold border border-indigo-200 dark:border-indigo-800/70 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 disabled:opacity-40 transition">
+                    ↶ Undo Last
+                </button>
+                <button type="button" onclick="resetToZero(); closeModal('settingsModal');"
+                        class="py-2.5 px-2 rounded-xl text-xs font-semibold border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">
+                    Reset to ₱0
+                </button>
+                <button type="button" onclick="resetDemoData(); closeModal('settingsModal');"
+                        class="py-2.5 px-2 rounded-xl text-xs font-semibold border border-bank-border dark:border-bank-darkBorder text-slate-700 dark:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition">
+                    Sample Data
+                </button>
+            </div>
+
+            <button type="button" onclick="closeModal('settingsModal'); logoutUser();"
+                    class="w-full bg-slate-800 hover:bg-slate-700 dark:bg-rose-600 dark:hover:bg-rose-700 text-white font-semibold py-2.5 rounded-xl text-sm transition">
+                Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 4: ALLOCATE SAVINGS POOL TO A SPECIFIC GOAL -->
+    <div id="goalAllocateModal" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-4">
+        <div class="bg-bank-card dark:bg-bank-darkCard text-slate-800 dark:text-slate-100 w-full max-w-md rounded-2xl border border-bank-border dark:border-bank-darkBorder p-5 space-y-4 shadow-xl">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base">Allocate Savings to Goal</h3>
+                <button onclick="closeModal('goalAllocateModal')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+
+            <div class="bg-indigo-50/90 dark:bg-indigo-950/60 border border-indigo-200/80 dark:border-indigo-800/70 rounded-xl px-3.5 py-2.5 flex justify-between items-center text-xs">
+                <span class="font-semibold text-indigo-800 dark:text-indigo-200">Available Savings Pool:</span>
+                <strong id="modalSavingsPoolText" class="text-sm font-extrabold text-indigo-700 dark:text-indigo-300 tabular-nums">₱0.00</strong>
+            </div>
+
+            <div>
+                <label for="goalSelectInput" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Choose Savings Goal</label>
+                <select id="goalSelectInput" class="w-full border border-bank-border dark:border-bank-darkBorder bg-bank-bg dark:bg-bank-darkElevated rounded-xl px-3 py-2 text-sm"></select>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label for="goalAmountInput" class="block text-xs font-semibold text-slate-600 dark:text-slate-300">Custom Amount to Add (₱)</label>
+                    <div class="flex gap-1">
+                        <button type="button" onclick="setGoalQuickAmount(50)" class="px-2 py-0.5 text-[11px] font-semibold rounded bg-bank-bg dark:bg-bank-darkElevated hover:bg-indigo-100 text-slate-700 dark:text-slate-200 border border-bank-border dark:border-bank-darkBorder">₱50</button>
+                        <button type="button" onclick="setGoalQuickAmount(100)" class="px-2 py-0.5 text-[11px] font-semibold rounded bg-bank-bg dark:bg-bank-darkElevated hover:bg-indigo-100 text-slate-700 dark:text-slate-200 border border-bank-border dark:border-bank-darkBorder">₱100</button>
+                        <button type="button" onclick="setGoalMaxFromPool()" class="px-2 py-0.5 text-[11px] font-semibold rounded bg-indigo-100 dark:bg-indigo-900/70 text-indigo-700 dark:text-indigo-200">Max Pool</button>
+                    </div>
+                </div>
+                <input id="goalAmountInput" type="number" min="1" step="1" placeholder="Enter custom amount, e.g., 120" class="w-full border border-bank-border dark:border-bank-darkBorder bg-bank-bg dark:bg-bank-darkElevated rounded-xl px-3 py-2 text-sm tabular-nums focus:outline-none focus:border-indigo-500" />
+            </div>
+
+            <p id="goalAllocateError" class="hidden text-xs text-rose-600 dark:text-rose-400 font-medium"></p>
+
+            <button type="button" onclick="submitGoalAllocation()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-sm shadow-sm transition">
+                Confirm Goal Allocation
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'finstudent_prototype_state_v10';
+        const USER_KEY = 'finstudent_prototype_user_v10';
+        const THEME_KEY = 'finstudent_prototype_theme_v10';
+        const MIN_SAVINGS_FLOOR = 5;
+        let authMode = 'login';
+        let undoStack = [];
+        let toastTimer = null;
+
+        function getDefaultState() {
+            return {
+                allowance: 1000,
+                savingsRate: 20,
+                tightBudgetWeek: false,
+                savingsPool: 200,
+                cycle: 'Weekly',
+                daysLeft: 4,
+                dailySeries: [185, 220, 160, 200, 0, 0, 0],
+                categories: [
+                    { name: 'Food & Drinks', budget: 400, spent: 375 },
+                    { name: 'Transportation', budget: 200, spent: 180 },
+                    { name: 'School & Printing', budget: 120, spent: 120 },
+                    { name: 'Personal & Leisure', budget: 80, spent: 40 }
+                ],
+                expenses: [
+                    { id: 1, category: 'Food & Drinks', amount: 145, note: 'Campus lunch & iced drink', date: 'Today' },
+                    { id: 2, category: 'Transportation', amount: 60, note: 'Jeepney & tricycle commute', date: 'Today' },
+                    { id: 3, category: 'School & Printing', amount: 120, note: 'Thesis draft printouts', date: 'Yesterday' }
+                ],
+                savingsGoals: [
+                    { id: 'emergency', name: 'Emergency Buffer', saved: 200, target: 1000 },
+                    { id: 'capstone', name: 'Capstone & Defense Fund', saved: 600, target: 1500 }
+                ]
+            };
+        }
+
+        function getZeroState() {
+            return {
+                allowance: 0,
+                savingsRate: 20,
+                tightBudgetWeek: false,
+                savingsPool: 0,
+                cycle: 'Weekly',
+                daysLeft: 7,
+                dailySeries: [0, 0, 0, 0, 0, 0, 0],
+                categories: [
+                    { name: 'Food & Drinks', budget: 0, spent: 0 },
+                    { name: 'Transportation', budget: 0, spent: 0 },
+                    { name: 'School & Printing', budget: 0, spent: 0 },
+                    { name: 'Personal & Leisure', budget: 0, spent: 0 }
+                ],
+                expenses: [],
+                savingsGoals: [
+                    { id: 'emergency', name: 'Emergency Buffer', saved: 0, target: 1000 },
+                    { id: 'capstone', name: 'Capstone & Defense Fund', saved: 0, target: 1500 }
+                ]
+            };
+        }
+
+        let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || getDefaultState();
+        state.savingsPool = Number(state.savingsPool ?? 0);
+        state.tightBudgetWeek = Boolean(state.tightBudgetWeek);
+        let currentUser = JSON.parse(localStorage.getItem(USER_KEY)) || null;
+        let isDarkMode = localStorage.getItem(THEME_KEY) === 'dark';
+
+        let dailyChartInstance = null;
+        let budgetChartInstance = null;
+
+        const peso = (num) => '₱' + Number(num || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const persistState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        const hasActiveAllowance = () => Number(state.allowance || 0) > 0;
+        const getEffectiveSavingsRate = () => {
+            if (state.tightBudgetWeek) return 0;
+            const raw = Number(state.savingsRate ?? 20);
+            return Number.isFinite(raw) ? Math.min(80, Math.max(MIN_SAVINGS_FLOOR, raw)) : 20;
+        };
+
+        function pushUndoSnapshot(actionLabel) {
+            undoStack.push({
+                label: actionLabel,
+                snapshot: JSON.parse(JSON.stringify(state))
+            });
+            if (undoStack.length > 15) undoStack.shift();
+            updateUndoControls();
+            showUndoToast(actionLabel);
+        }
+
+        function showUndoToast(label) {
+            const toast = document.getElementById('undoToast');
+            const msg = document.getElementById('undoToastMessage');
+            if (!toast || !msg) return;
+            msg.textContent = label;
+            toast.classList.remove('hidden');
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 6000);
+        }
+
+        function undoLastAction() {
+            if (undoStack.length === 0) return;
+            const last = undoStack.pop();
+            state = last.snapshot;
+            persistState();
+            updateUndoControls();
+            const toast = document.getElementById('undoToast');
+            if (toast) toast.classList.add('hidden');
+            renderAll();
+        }
+
+        function updateUndoControls() {
+            const hasUndo = undoStack.length > 0;
+            const lastLabel = hasUndo ? `Undo: ${undoStack[undoStack.length - 1].label}` : 'Nothing to undo';
+            ['dashboardUndoBtn', 'savingsUndoBtn', 'settingsUndoBtn'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                btn.disabled = !hasUndo;
+                btn.title = lastLabel;
+            });
+        }
+
+        function applyThemeUI() {
+            document.documentElement.classList.toggle('dark', isDarkMode);
+            const btn = document.getElementById('darkModeToggleBtn');
+            if (btn) {
+                btn.textContent = isDarkMode ? 'On' : 'Off';
+                btn.className = isDarkMode
+                    ? 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-400 hover:bg-emerald-300 text-slate-950 transition'
+                    : 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 hover:bg-slate-300 text-slate-800 transition';
+            }
+            if (currentUser && !document.getElementById('view-analytics').classList.contains('hidden')) {
+                renderCharts();
+            }
+        }
+
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem(THEME_KEY, isDarkMode ? 'dark' : 'light');
+            applyThemeUI();
+        }
+
+        function getInitials(name = 'Student') {
+            const parts = name.trim().split(/\s+/).filter(Boolean);
+            if (parts.length === 0) return 'ST';
+            if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        }
+
+        function renderAvatar(el, user) {
+            if (!el || !user) return;
+            if (user.avatar) {
+                el.innerHTML = `<img src="${user.avatar}" alt="${user.name}" class="w-full h-full object-cover" />`;
+            } else {
+                el.textContent = getInitials(user.name);
+            }
+        }
+
+        function handleAvatarUpload(event) {
+            const file = event.target.files?.[0];
+            if (!file || !currentUser) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                currentUser.avatar = reader.result;
+                localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+                renderProfileHeader();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderProfileHeader() {
+            if (!currentUser) return;
+            const firstName = (currentUser.name || 'Student').split(/\s+/)[0];
+            document.getElementById('headerUsername').textContent = firstName;
+            document.getElementById('headerSubtext').textContent = `Settings • ${currentUser.course || 'Student'}`;
+            document.getElementById('settingsName').textContent = currentUser.name;
+            document.getElementById('settingsCourse').textContent = `${currentUser.course} • ${currentUser.email}`;
+            renderAvatar(document.getElementById('headerAvatar'), currentUser);
+            renderAvatar(document.getElementById('settingsAvatar'), currentUser);
+        }
+
+        function setAuthMode(mode) {
+            authMode = mode;
+            const isReg = mode === 'register';
+            document.getElementById('registerNameGroup').classList.toggle('hidden', !isReg);
+            document.getElementById('registerCourseGroup').classList.toggle('hidden', !isReg);
+            document.getElementById('authSubmitBtn').textContent = isReg ? 'Register & Open Dashboard' : 'Sign In to Dashboard';
+
+            document.getElementById('tabLoginBtn').className = isReg
+                ? 'py-2 rounded-lg text-slate-500 dark:text-slate-400 transition'
+                : 'py-2 rounded-lg bg-bank-card dark:bg-bank-darkElevated text-indigo-700 dark:text-indigo-300 shadow-sm transition';
+            document.getElementById('tabRegisterBtn').className = isReg
+                ? 'py-2 rounded-lg bg-bank-card dark:bg-bank-darkElevated text-indigo-700 dark:text-indigo-300 shadow-sm transition'
+                : 'py-2 rounded-lg text-slate-500 dark:text-slate-400 transition';
+        }
+
+        function togglePasswordVisibility() {
+            const pField = document.getElementById('authPassword');
+            const toggleTxt = document.getElementById('toggleText');
+            if (pField.type === 'password') {
+                pField.type = 'text';
+                toggleTxt.textContent = 'Hide';
+            } else {
+                pField.type = 'password';
+                toggleTxt.textContent = 'Show';
+            }
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+            const errBox = document.getElementById('authError');
+
+            if (!email || password.length < 4) {
+                errBox.textContent = 'Please enter a valid student email and password (min 4 characters).';
+                errBox.classList.remove('hidden');
+                return;
+            }
+            errBox.classList.add('hidden');
+
+            let name = 'Wendermere Aguirre';
+            let course = 'BSCS - 3rd Year';
+            if (authMode === 'register') {
+                name = document.getElementById('regName').value.trim() || email.split('@')[0];
+                course = document.getElementById('regCourse').value.trim() || 'Tertiary Student';
+            }
+
+            currentUser = { name, email, course };
+            localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+            updateSessionUI();
+        }
+
+        function loginAsDemo() {
+            currentUser = {
+                name: 'Wendermere Aguirre',
+                email: 'student@ortigas-cainta.sti.edu.ph',
+                course: 'BSCS • STI Ortigas-Cainta'
+            };
+            localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+            updateSessionUI();
+        }
+
+        function logoutUser() {
+            currentUser = null;
+            localStorage.removeItem(USER_KEY);
+            updateSessionUI();
+        }
+
+        function updateSessionUI() {
+            const loggedIn = Boolean(currentUser);
+            document.getElementById('authScreen').classList.toggle('hidden', loggedIn);
+            document.getElementById('appScreen').classList.toggle('hidden', !loggedIn);
+
+            if (loggedIn) {
+                renderProfileHeader();
+                updateUndoControls();
+                renderAll();
+            }
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function handleCycleChange() {
+            const cycle = document.getElementById('cycleInput').value;
+            const daysInput = document.getElementById('daysLeftInput');
+            if (cycle === 'Daily') {
+                daysInput.value = 1;
+            } else if (cycle === 'Weekly' && Number(daysInput.value) === 1) {
+                daysInput.value = 4;
+            } else if (cycle === 'Monthly' && Number(daysInput.value) <= 7) {
+                daysInput.value = 15;
+            }
+        }
+
+        function openExpenseModal() {
+            const noAllowance = !hasActiveAllowance();
+            document.getElementById('noAllowanceBanner').classList.toggle('hidden', !noAllowance);
+            document.getElementById('expenseFieldsWrapper').classList.toggle('hidden', noAllowance);
+            document.getElementById('expenseError').classList.add('hidden');
+            openModal('expenseModal');
+        }
+
+        function openSettingsModal() {
+            renderProfileHeader();
+            applyThemeUI();
+            updateUndoControls();
+            openModal('settingsModal');
+        }
+
+        function openAllowanceModal() {
+            const isTight = Boolean(state.tightBudgetWeek);
+            const savedRate = Math.min(80, Math.max(MIN_SAVINGS_FLOOR, Number(state.savingsRate ?? 20)));
+            document.getElementById('allowanceInput').value = state.allowance > 0 ? state.allowance : 1000;
+            document.getElementById('tightWeekToggle').checked = isTight;
+            document.getElementById('savingsPercentInput').value = isTight ? 0 : savedRate;
+            document.getElementById('cycleInput').value = state.cycle;
+            document.getElementById('daysLeftInput').value = state.daysLeft;
+            syncTightWeekControls();
+            updateSavingsPreview();
+            openModal('allowanceModal');
+        }
+
+        function syncTightWeekControls() {
+            const isTight = document.getElementById('tightWeekToggle').checked;
+            const pctInput = document.getElementById('savingsPercentInput');
+            const presetsWrap = document.getElementById('savingsPresetButtons');
+            const floorHint = document.getElementById('savingsFloorHint');
+
+            pctInput.disabled = isTight;
+            presetsWrap.classList.toggle('opacity-40', isTight);
+            presetsWrap.classList.toggle('pointer-events-none', isTight);
+
+            if (isTight) {
+                pctInput.value = 0;
+                floorHint.innerHTML = '<strong>Tight Budget Week active:</strong> 0% auto-save for this cycle so your full allowance stays available for essentials.';
+            } else {
+                const currentVal = parseFloat(pctInput.value);
+                if (!Number.isFinite(currentVal) || currentVal < MIN_SAVINGS_FLOOR) {
+                    pctInput.value = MIN_SAVINGS_FLOOR;
+                }
+                floorHint.innerHTML = '<strong>5% minimum floor</strong> keeps a habit going on every normal cycle; type up to <strong>80%</strong> or tap <strong>50%</strong> for higher savings.';
+            }
+        }
+
+        function handleTightWeekToggle() {
+            const isTight = document.getElementById('tightWeekToggle').checked;
+            const pctInput = document.getElementById('savingsPercentInput');
+            if (!isTight && (parseFloat(pctInput.value) || 0) < MIN_SAVINGS_FLOOR) {
+                pctInput.value = Math.max(MIN_SAVINGS_FLOOR, Number(state.savingsRate ?? 20));
+            }
+            syncTightWeekControls();
+            updateSavingsPreview();
+        }
+
+        function updateSavingsPreview() {
+            const isTight = document.getElementById('tightWeekToggle').checked;
+            const amt = Math.max(0, parseFloat(document.getElementById('allowanceInput').value) || 0);
+            const pctInput = document.getElementById('savingsPercentInput');
+
+            if (isTight) {
+                pctInput.value = 0;
+                document.getElementById('savingsPreviewText').textContent = '₱0.00 (Tight Week • 0%)';
+                return;
+            }
+
+            const raw = parseFloat(pctInput.value);
+            const clampedPct = Number.isFinite(raw) ? Math.min(80, Math.max(MIN_SAVINGS_FLOOR, raw)) : 20;
+            const savedAmt = Math.round(amt * (clampedPct / 100));
+            document.getElementById('savingsPreviewText').textContent = `${peso(savedAmt)} to savings pool (${clampedPct}%)`;
+        }
+
+        function setSavingsPreset(pct) {
+            document.getElementById('tightWeekToggle').checked = false;
+            syncTightWeekControls();
+            document.getElementById('savingsPercentInput').value = Math.min(80, Math.max(MIN_SAVINGS_FLOOR, pct));
+            updateSavingsPreview();
+        }
+
+        function openGoalAllocateModal(preselectedId = null, suggestedAmount = '') {
+            const selectEl = document.getElementById('goalSelectInput');
+            selectEl.innerHTML = state.savingsGoals.map(g =>
+                `<option value="${g.id}">${g.name} (${peso(g.saved)} / ${peso(g.target)})</option>`
+            ).join('');
+            if (preselectedId) {
+                selectEl.value = preselectedId;
+            }
+            document.getElementById('modalSavingsPoolText').textContent = peso(state.savingsPool);
+            const amtInput = document.getElementById('goalAmountInput');
+            amtInput.value = suggestedAmount;
+            amtInput.max = Math.max(0, state.savingsPool);
+            document.getElementById('goalAllocateError').classList.add('hidden');
+            openModal('goalAllocateModal');
+        }
+
+        function setGoalQuickAmount(val) {
+            document.getElementById('goalAmountInput').value = val;
+            document.getElementById('goalAllocateError').classList.add('hidden');
+        }
+
+        function setGoalMaxFromPool() {
+            document.getElementById('goalAmountInput').value = Math.max(0, Number(state.savingsPool || 0));
+            document.getElementById('goalAllocateError').classList.add('hidden');
+        }
+
+        function submitGoalAllocation() {
+            const goalId = document.getElementById('goalSelectInput').value;
+            const amt = parseFloat(document.getElementById('goalAmountInput').value);
+            const errEl = document.getElementById('goalAllocateError');
+
+            if (!Number.isFinite(amt) || amt <= 0) {
+                errEl.textContent = 'Please enter a valid amount greater than ₱0.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            if (amt > state.savingsPool + 0.0001) {
+                errEl.textContent = `Amount exceeds your available savings pool (${peso(state.savingsPool)}).`;
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            const goal = state.savingsGoals.find(g => g.id === goalId);
+            if (!goal) return;
+
+            const appliedAmt = Math.min(amt, state.savingsPool);
+            pushUndoSnapshot(`Allocated ${peso(appliedAmt)} to ${goal.name}`);
+
+            goal.saved += appliedAmt;
+            state.savingsPool = Math.max(0, Number((state.savingsPool - appliedAmt).toFixed(2)));
+
+            errEl.classList.add('hidden');
+            persistState();
+            closeModal('goalAllocateModal');
+            renderAll();
+        }
+
+        function switchTab(tab) {
+            ['dashboard', 'analytics', 'savings'].forEach(t => {
+                document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
+                const btn = document.getElementById('nav-' + t);
+                btn.classList.toggle('text-indigo-600', t === tab);
+                btn.classList.toggle('dark:text-indigo-400', t === tab);
+                btn.classList.toggle('text-slate-400', t !== tab);
+            });
+            if (tab === 'analytics') renderCharts();
+            if (tab === 'savings') renderSavings();
+        }
+
+        function saveAllowance() {
+            const amt = Math.max(0, parseFloat(document.getElementById('allowanceInput').value) || 0);
+            const isTight = document.getElementById('tightWeekToggle').checked;
+            const rawRate = parseFloat(document.getElementById('savingsPercentInput').value);
+            const savingsRate = isTight
+                ? 0
+                : (Number.isFinite(rawRate) ? Math.min(80, Math.max(MIN_SAVINGS_FLOOR, rawRate)) : 20);
+            const cycle = document.getElementById('cycleInput').value;
+            const days = Math.max(1, parseInt(document.getElementById('daysLeftInput').value, 10) || 1);
+            const preset = document.getElementById('rulePreset').value;
+
+            pushUndoSnapshot(`Set allowance to ${peso(amt)}`);
+
+            const wasZero = !hasActiveAllowance();
+            state.allowance = amt;
+            state.tightBudgetWeek = isTight;
+            if (!isTight) {
+                state.savingsRate = savingsRate;
+            }
+            state.cycle = cycle;
+            state.daysLeft = days;
+
+            const savingsDeduction = Math.round(amt * (savingsRate / 100));
+            const spendLimit = Math.max(0, amt - savingsDeduction);
+
+            state.savingsPool = Math.max(0, Number((state.savingsPool + savingsDeduction).toFixed(2)));
+
+            const spentMap = wasZero ? {} : Object.fromEntries(state.categories.map(c => [c.name, c.spent]));
+
+            const splits = preset === 'commuteHeavy'
+                ? [
+                    { name: 'Food & Drinks', ratio: 0.40 },
+                    { name: 'Transportation', ratio: 0.35 },
+                    { name: 'School & Printing', ratio: 0.15 },
+                    { name: 'Personal & Leisure', ratio: 0.10 }
+                ]
+                : [
+                    { name: 'Food & Drinks', ratio: 0.50 },
+                    { name: 'Transportation', ratio: 0.25 },
+                    { name: 'School & Printing', ratio: 0.15 },
+                    { name: 'Personal & Leisure', ratio: 0.10 }
+                ];
+
+            state.categories = splits.map(s => ({
+                name: s.name,
+                budget: Math.round(spendLimit * s.ratio),
+                spent: spentMap[s.name] || 0
+            }));
+
+            persistState();
+            closeModal('allowanceModal');
+            renderAll();
+        }
+
+        function addExpense() {
+            const errEl = document.getElementById('expenseError');
+            if (!hasActiveAllowance()) {
+                openExpenseModal();
+                return;
+            }
+
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            const categoryName = document.getElementById('expenseCategory').value;
+            const note = document.getElementById('expenseNote').value.trim() || 'Daily expense';
+
+            if (!Number.isFinite(amount) || amount <= 0) {
+                errEl.textContent = 'Please enter a valid expense amount greater than ₱0.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+            errEl.classList.add('hidden');
+
+            pushUndoSnapshot(`Logged ${peso(amount)} (${categoryName})`);
+
+            const cat = state.categories.find(c => c.name === categoryName);
+            if (cat) cat.spent += amount;
+
+            state.dailySeries[4] = (state.dailySeries[4] || 0) + amount;
+
+            state.expenses.unshift({
+                id: Date.now(),
+                category: categoryName,
+                amount,
+                note,
+                date: 'Just now'
+            });
+
+            document.getElementById('expenseAmount').value = '';
+            document.getElementById('expenseNote').value = '';
+            persistState();
+            closeModal('expenseModal');
+            renderAll();
+        }
+
+        function removeExpenseById(expenseId) {
+            const idx = state.expenses.findIndex(e => e.id === expenseId);
+            if (idx === -1) return;
+            const item = state.expenses[idx];
+
+            pushUndoSnapshot(`Removed ${peso(item.amount)} expense`);
+
+            const cat = state.categories.find(c => c.name === item.category);
+            if (cat) cat.spent = Math.max(0, Number((cat.spent - item.amount).toFixed(2)));
+            if (item.date === 'Just now') {
+                state.dailySeries[4] = Math.max(0, Number(((state.dailySeries[4] || 0) - item.amount).toFixed(2)));
+            }
+            state.expenses.splice(idx, 1);
+            persistState();
+            renderAll();
+        }
+
+        function resetToZero() {
+            pushUndoSnapshot('Reset values to ₱0');
+            state = getZeroState();
+            persistState();
+            renderAll();
+        }
+
+        function resetDemoData() {
+            pushUndoSnapshot('Loaded sample data');
+            state = getDefaultState();
+            persistState();
+            renderAll();
+        }
+
+        function renderAll() {
+            const totalSpent = state.categories.reduce((sum, c) => sum + c.spent, 0);
+            const effectiveRate = getEffectiveSavingsRate();
+            const saveAmt = state.allowance * (effectiveRate / 100);
+            const spendLimit = Math.max(0, state.allowance - saveAmt);
+            const remainingSpend = Math.max(0, spendLimit - totalSpent);
+            const safeDaily = remainingSpend / Math.max(1, state.daysLeft);
+
+            document.getElementById('remainingTotal').textContent = peso(remainingSpend);
+            document.getElementById('totalAllocatedText').textContent = peso(state.allowance);
+            document.getElementById('safeDailySpend').textContent = peso(safeDaily) + '/day';
+            document.getElementById('cycleBadge').textContent = `${state.cycle} • ${state.daysLeft} ${state.daysLeft === 1 ? 'day' : 'days'} left`;
+            document.getElementById('savingsNotice').innerHTML = state.tightBudgetWeek
+                ? `*Tight Budget Week (0% Auto-Save) • Pool available: <strong class="text-white">${peso(state.savingsPool)}</strong>`
+                : `*${effectiveRate}% Savings Rule (Min ${MIN_SAVINGS_FLOOR}%) • Pool available: <strong class="text-white">${peso(state.savingsPool)}</strong>`;
+
+            const alertBox = document.getElementById('alertContainer');
+            alertBox.innerHTML = '';
+            if (!hasActiveAllowance()) {
+                alertBox.innerHTML += `
+              <div class="bg-indigo-50/90 dark:bg-indigo-950/60 border border-indigo-200/80 dark:border-indigo-800/70 text-indigo-900 dark:text-indigo-200 text-xs px-3.5 py-2.5 rounded-xl flex items-center justify-between gap-2">
+                <span><strong>No Allowance Set:</strong> Set your allowance first to unlock expense logging.</span>
+                <button type="button" onclick="openAllowanceModal()" class="font-extrabold underline shrink-0">Set Now</button>
+              </div>`;
+            }
+            state.categories.forEach(c => {
+                if (c.budget <= 0) return;
+                const pct = (c.spent / c.budget) * 100;
+                if (pct >= 100) {
+                    alertBox.innerHTML += `
+                <div class="bg-rose-50/90 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/70 text-rose-800 dark:text-rose-200 text-xs px-3.5 py-2.5 rounded-xl font-medium">
+                  <strong>Limit Exceeded:</strong> ${c.name} is at ${pct.toFixed(0)}% (${peso(c.spent)} / ${peso(c.budget)}).
+                </div>`;
+                } else if (pct >= 80) {
+                    alertBox.innerHTML += `
+                <div class="bg-amber-50/90 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/70 text-amber-800 dark:text-amber-200 text-xs px-3.5 py-2.5 rounded-xl font-medium">
+                  <strong>80% Threshold Alert:</strong> ${c.name} has reached ${pct.toFixed(0)}% of its budget.
+                </div>`;
+                }
+            });
+
+            const catContainer = document.getElementById('categoryCards');
+            catContainer.innerHTML = state.categories.map(c => {
+                const pct = c.budget > 0 ? Math.min(100, (c.spent / c.budget) * 100) : 0;
+                const rawPct = c.budget > 0 ? (c.spent / c.budget) * 100 : 0;
+                const barColor = rawPct >= 100 ? 'bg-rose-500' : rawPct >= 80 ? 'bg-amber-500' : 'bg-indigo-600 dark:bg-indigo-500';
+                return `
+              <div class="bg-bank-card dark:bg-bank-darkCard p-3.5 rounded-2xl border border-bank-border dark:border-bank-darkBorder shadow-xs">
+                <div class="flex justify-between text-xs font-semibold mb-1.5">
+                  <span class="text-slate-700 dark:text-slate-100">${c.name}</span>
+                  <span class="tabular-nums text-slate-600 dark:text-slate-300">${peso(c.spent)} <span class="text-slate-400">/ ${peso(c.budget)}</span></span>
+                </div>
+                <div class="w-full h-2 bg-slate-200/80 dark:bg-bank-darkElevated rounded-full overflow-hidden">
+                  <div class="${barColor} h-full rounded-full transition-all" style="width:${pct}%"></div>
+                </div>
+              </div>`;
+            }).join('');
+
+            document.getElementById('txCount').textContent = `${state.expenses.length} items`;
+            document.getElementById('recentExpenses').innerHTML = state.expenses.length === 0
+                ? `<div class="p-4 text-center text-xs text-slate-400">${hasActiveAllowance() ? 'No transactions yet. Tap + to log an expense.' : 'Set an allowance first to start logging expenses.'}</div>`
+                : state.expenses.slice(0, 6).map(e => `
+              <div class="p-3 flex items-center justify-between gap-2 text-xs">
+                <div class="min-w-0">
+                  <p class="font-semibold text-slate-800 dark:text-slate-100 truncate">${e.note}</p>
+                  <p class="text-slate-400">${e.category} • ${e.date}</p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="font-bold text-slate-800 dark:text-slate-100 tabular-nums">-${peso(e.amount)}</span>
+                  <button type="button" onclick="removeExpenseById(${e.id})" title="Undo / Remove this entry"
+                          class="w-6 h-6 rounded-lg bg-slate-200/70 dark:bg-bank-darkElevated hover:bg-rose-100 dark:hover:bg-rose-950/70 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-300 text-[11px] font-bold flex items-center justify-center transition">
+                    ✕
+                  </button>
+                </div>
+              </div>`).join('');
+
+            renderSavings();
+            if (!document.getElementById('view-analytics').classList.contains('hidden')) {
+                renderCharts();
+            }
+        }
+
+        function renderSavings() {
+            const totalSaved = state.savingsGoals.reduce((acc, g) => acc + Number(g.saved || 0), 0);
+            document.getElementById('savingsPoolDisplay').textContent = peso(state.savingsPool);
+            document.getElementById('goalsSummaryBadge').textContent = `Total: ${peso(totalSaved)}`;
+
+            document.getElementById('savingsCards').innerHTML = state.savingsGoals.map(g => {
+                const pct = g.target > 0 ? Math.min(100, (g.saved / g.target) * 100) : 0;
+                const disabledClass = state.savingsPool <= 0 ? 'opacity-45 cursor-not-allowed' : 'hover:bg-indigo-700';
+                return `
+              <div class="bg-bank-card dark:bg-bank-darkCard p-4 rounded-2xl border border-bank-border dark:border-bank-darkBorder space-y-2.5 shadow-xs">
+                <div class="flex justify-between items-center gap-2">
+                  <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">${g.name}</h3>
+                  <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">${pct.toFixed(0)}%</span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-200/80 dark:bg-bank-darkElevated rounded-full overflow-hidden">
+                  <div class="bg-gradient-to-r from-indigo-600 to-violet-500 h-full rounded-full transition-all" style="width:${pct}%"></div>
+                </div>
+                <div class="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400 tabular-nums pt-0.5">
+                  <span>Saved: <strong class="text-slate-800 dark:text-slate-100">${peso(g.saved)}</strong> / ${peso(g.target)}</span>
+                  <button type="button" ${state.savingsPool <= 0 ? 'disabled' : ''} onclick="openGoalAllocateModal('${g.id}', '')"
+                          class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition ${disabledClass}">
+                    + Add from Pool
+                  </button>
+                </div>
+              </div>`;
+            }).join('');
+        }
+
+        function renderCharts() {
+            const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+            const budgetCtx = document.getElementById('budgetChart').getContext('2d');
+            const tickColor = isDarkMode ? '#cbd5e1' : '#475569';
+            const gridColor = isDarkMode ? 'rgba(148, 163, 184, 0.12)' : 'rgba(148, 163, 184, 0.22)';
+
+            if (dailyChartInstance) dailyChartInstance.destroy();
+            if (budgetChartInstance) budgetChartInstance.destroy();
+
+            dailyChartInstance = new Chart(dailyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri (Today)', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Daily Spend (₱)',
+                        data: state.dailySeries,
+                        borderColor: '#5b46e8',
+                        backgroundColor: 'rgba(91, 70, 232, 0.14)',
+                        fill: true,
+                        tension: 0.35
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: tickColor }, grid: { color: gridColor } },
+                        y: { ticks: { color: tickColor }, grid: { color: gridColor } }
+                    }
+                }
+            });
+
+            budgetChartInstance = new Chart(budgetCtx, {
+                type: 'bar',
+                data: {
+                    labels: state.categories.map(c => c.name.split(' ')[0]),
+                    datasets: [
+                        { label: 'Planned (₱)', data: state.categories.map(c => c.budget), backgroundColor: isDarkMode ? '#3f4563' : '#cbd5e1' },
+                        { label: 'Actual (₱)', data: state.categories.map(c => c.spent), backgroundColor: '#7c3aed' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: tickColor } } },
+                    scales: {
+                        x: { ticks: { color: tickColor }, grid: { color: gridColor } },
+                        y: { ticks: { color: tickColor }, grid: { color: gridColor } }
+                    }
+                }
+            });
+        }
+
+        applyThemeUI();
+        updateSessionUI();
+    </script>
+</body>
+</html>
+
